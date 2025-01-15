@@ -41,13 +41,35 @@ namespace PostgresConnect1
             // получение данных
             using (ApplicationContext db = new ApplicationContext())
             {
+                // обновляем только объекты, у которых имя Tom
+                db.Users.Where(u => u.Name == "Tom")
+                    .ExecuteUpdate(s => s
+                            .SetProperty(u => u.Age, u => u.Age + 1)    // Age = Age + 1
+                            .SetProperty(u => u.Name, u => "Tomas"));      // Name = "Tomas
+                
                 // получаем объекты из бд и выводим на консоль
                 var users = db.Users.ToList();
-                Console.WriteLine("Users list:");
+                Console.WriteLine("Users list before:");
                 foreach (User u in users)
                 {
                     Console.WriteLine($"{u.Id}.{u.Name} - {u.Age}");
                 }
+
+                foreach (User u in users)
+                {
+                    if (u.Age>30)
+                        db.Users.Remove(u);
+                }
+
+                db.SaveChanges();
+                users = db.Users.ToList();
+
+                Console.WriteLine("Users list after:");
+                foreach (User u in users)
+                {
+                    Console.WriteLine($"{u.Id}.{u.Name} - {u.Age}");                    
+                }
+                //  await db.Users.Where(u => u.Name == "Bob").ExecuteDeleteAsync();
             }
             Console.ReadLine();
         }
